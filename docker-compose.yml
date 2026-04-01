@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mysecretpassword
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+      - ./certs:/var/lib/postgresql/certs
+    command: >
+      -c ssl=on  -c ssl_cert_file=/var/lib/postgresql/certs/server.crt  -c ssl_key_file=/var/lib/postgresql/certs/server.key

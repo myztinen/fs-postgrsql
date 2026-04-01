@@ -1,0 +1,5 @@
+mkdir certs
+openssl req -new -x509 -nodes -days 365 -subj "/CN=localhost" -keyout certs/server.key -out certs/server.crt
+chmod 600 certs/server.key
+chmod 644 certs/server.crt
+sudo chown 999:999 certs/server.key certs/server.crt # set file ownership to postgres
