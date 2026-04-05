@@ -13,42 +13,62 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
     },
 });
 
-class Note extends Model { }
-Note.init({
+class Blog extends Model { }
+Blog.init({
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    content: {
+    author: {
+        type: DataTypes.TEXT
+    },
+    url: {
         type: DataTypes.TEXT,
         allowNull: false
     },
-    important: {
-        type: DataTypes.BOOLEAN
+    title: {
+        type: DataTypes.TEXT,
+        allowNull: false
     },
-    date: {
-        type: DataTypes.DATE
+    likes: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
     }
 }, {
     sequelize,
     underscored: true,
     timestamps: false,
-    modelName: 'note'
+    modelName: 'blog'
 })
 
 
-app.get('/api/notes', async (req, res) => {
-    const notes = await Note.findAll()
-    res.json(notes)
+app.get('/api/blogs', async (req, res) => {
+    const blogs = await Blog.findAll()
+    console.log(JSON.stringify(blogs, null, 2))
+    res.json(blogs)
 })
 
-app.post('/api/notes', async (req, res) => {
+app.post('/api/blogs', async (req, res) => {
     try {
-        const note = await Note.create({ ...req.body, date: new Date() })
-        return res.json(note)
+        const blog = await Blog.create({ ...req.body })
+        return res.json(blog)
     } catch (error) {
         return res.status(400).json({ error })
+    }
+})
+
+app.delete('/api/blogs/:id', async (req, res) => {
+    const numberofDestroyed = await Blog.destroy({
+        where: {
+            id: req.params.id,
+        },
+    })
+    if (numberofDestroyed === 1) {
+        res.json(`Removed ${numberofDestroyed} rows`)
+    } else {
+        console.log('Something bad happened')
+        res.status(404).end()
     }
 })
 const PORT = process.env.PORT || 3001
