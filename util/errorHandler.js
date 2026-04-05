@@ -1,11 +1,10 @@
 function errorHandler(error, request, response, next) {
-
     if (error.name === 'SequelizeValidationError') {
-        return response.status(400).send({ error: 'malformatted data' })
+        return response.status(400).send({ error: error.errors[0].message })
     }
 
-    console.error('Error:', err);
-    next(err)
+    console.error('Error:', error);
+    next(error)
 }
 
 module.exports = errorHandler
