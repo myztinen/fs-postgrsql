@@ -6,7 +6,7 @@ router.get('/', async (req, res) => {
 
     const blogs = await Blog.findAll({
         group: 'author',
-        attributes: ['author', [fn('COUNT', col('likes')), 'articles'], [fn('SUM', col('likes')), 'likes']],
+        attributes: ['author', [fn('COUNT', col('id')), 'blogs'], [fn('SUM', col('likes')), 'likes']],
         order: [
             ['likes', 'DESC'],
         ],
