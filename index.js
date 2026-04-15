@@ -11,8 +11,7 @@ const usersRouter = require('./controllers/users')
 const loginRouter = require('./controllers/login')
 const authorsRouter = require('./controllers/authors')
 const resetRouter = require('./controllers/reset')
-
-
+const readingListsRouter = require('./controllers/readingLists')
 
 app.use(express.json())
 
@@ -21,6 +20,7 @@ app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)
 app.use('/api/authors', authorsRouter)
 app.use('/api/reset', resetRouter)
+app.use('/api/readingLists', readingListsRouter)
 
 app.get('/', (request, response) => {
     response.status(200).send()

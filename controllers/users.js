@@ -42,4 +42,28 @@ router.put('/:username', async (req, res, next) => {
     }
 })
 
+router.get('/:id', async (req, res, next) => {
+    try {
+        const user = await User.findByPk(req.params.id, {
+            attributes: ['name', 'username'],
+            include: [{
+                model: Blog,
+                as: 'readings',
+                attributes: ['id', 'url', 'title', 'author', 'likes', 'year'],
+                through: { attributes: [] },
+            }],
+        })
+        if (user === null) {
+            return res.status(400).json({
+                error: 'No user id was found'
+            })
+        }
+        console.log(JSON.stringify(user, null, 2))
+        res.json(user)
+    } catch (err) {
+        next(err)
+    }
+})
+
+
 module.exports = router
