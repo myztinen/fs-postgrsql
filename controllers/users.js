@@ -1,10 +1,10 @@
 const router = require('express').Router()
 
-const { User, Blog } = require('../models')
+const { User, Blog, ReadingList } = require('../models')
 
 router.get('/', async (req, res) => {
     const users = await User.findAll({
-        attributes: { exclude: ['userId'] },
+        attributes: { exclude: ['userId', 'password'] },
         include: {
             model: Blog,
             attributes: ['id', 'title', 'author', 'url', 'likes']
@@ -46,11 +46,15 @@ router.get('/:id', async (req, res, next) => {
     try {
         const user = await User.findByPk(req.params.id, {
             attributes: ['name', 'username'],
+            exclude: ['id', 'password'],
             include: [{
                 model: Blog,
                 as: 'readings',
                 attributes: ['id', 'url', 'title', 'author', 'likes', 'year'],
-                through: { attributes: [] },
+                through: {
+                    attributes: ['id', 'readStatus'],
+
+                },
             }],
         })
         if (user === null) {
@@ -58,8 +62,14 @@ router.get('/:id', async (req, res, next) => {
                 error: 'No user id was found'
             })
         }
-        console.log(JSON.stringify(user, null, 2))
-        res.json(user)
+        const returnableJson = user.toJSON()
+        returnableJson.readings = returnableJson.readings.map((blog) => {
+            const join = blog.reading_list
+            const readinglists = join ? [{ id: join.id, read: join.readStatus }] : []
+            delete blog.reading_list
+            return { ...blog, readinglists }
+        })
+        res.json(returnableJson)
     } catch (err) {
         next(err)
     }

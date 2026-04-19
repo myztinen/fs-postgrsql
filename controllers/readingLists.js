@@ -1,11 +1,9 @@
 const router = require('express').Router()
-const { Blog, User } = require('../models')
+const { Blog, User, ReadingList } = require('../models')
+const { tokenExtractor } = require('../util/middleware')
 
-
-const { ReadingList } = require('../models')
 
 router.post('/', async (req, res, next) => {
-    //req.blog = await Blog.findByPk(req.params.id)
 
     try {
         console.log(req.body)
@@ -27,6 +25,40 @@ router.post('/', async (req, res, next) => {
         next(error)
     }
 })
+
+router.put('/:id', tokenExtractor, async (req, res, next) => {
+    try {
+        const readingList = await ReadingList.findByPk(req.params.id)
+        const user = await User.findByPk(req.decodedToken.id)
+        console.log(readingList)
+
+        if (!readingList) {
+            return res.status(404).json({
+                error: 'No such reading list'
+            })
+        }
+
+        if (user.id != readingList.userId) {
+            return res.status(403).json({ error: 'This is not your reading list' })
+        }
+        if (req.body?.read === true) {
+            await ReadingList.update(
+                { readStatus: true },
+                {
+                    where: {
+                        id: req.params.id,
+                    },
+                },
+            );
+            return res.json("successfully changed status")
+        }
+        return res.status(400).json({ error: 'Something went wrong' })
+
+    } catch (error) {
+        next(error)
+    }
+})
+
 
 
 module.exports = router
