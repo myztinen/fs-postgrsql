@@ -1,5 +1,5 @@
 const router = require('express').Router()
-
+const { Op } = require('sequelize')
 const { User, Blog, ReadingList } = require('../models')
 
 router.get('/', async (req, res) => {
@@ -43,6 +43,11 @@ router.put('/:username', async (req, res, next) => {
 })
 
 router.get('/:id', async (req, res, next) => {
+    let readStatus = { [Op.in]: [true, false] }
+
+    if (req.query.read) {
+        readStatus = req.query.read === "true"
+    }
     try {
         const user = await User.findByPk(req.params.id, {
             attributes: ['name', 'username'],
@@ -52,10 +57,13 @@ router.get('/:id', async (req, res, next) => {
                 as: 'readings',
                 attributes: ['id', 'url', 'title', 'author', 'likes', 'year'],
                 through: {
+                    where: {
+                        readStatus
+                    },
                     attributes: ['id', 'readStatus'],
 
                 },
-            }],
+            },]
         })
         if (user === null) {
             return res.status(400).json({
@@ -65,9 +73,10 @@ router.get('/:id', async (req, res, next) => {
         const returnableJson = user.toJSON()
         returnableJson.readings = returnableJson.readings.map((blog) => {
             const join = blog.reading_list
-            const readinglists = join ? [{ id: join.id, read: join.readStatus }] : []
+            //const reading_list = join ? [{ id: join.id, read: join.readStatus }] : []
+            const reading_list = join ? { id: join.id, read: join.readStatus } : {}
             delete blog.reading_list
-            return { ...blog, readinglists }
+            return { ...blog, reading_list }
         })
         res.json(returnableJson)
     } catch (err) {

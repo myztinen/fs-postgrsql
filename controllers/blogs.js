@@ -2,7 +2,7 @@ const { Op } = require('sequelize')
 const jwt = require('jsonwebtoken')
 const router = require('express').Router()
 const { Blog, User } = require('../models')
-const { tokenExtractor } = require('../util/middleware')
+const { tokenExtractor, sessionValidator } = require('../util/middleware')
 
 const { SECRET } = require('../util/config')
 
@@ -17,7 +17,6 @@ const blogFinder = async (req, res, next) => {
     } catch (error) {
         next(error)
     }
-
 }
 
 const userExtractor = (req, response, next) => {
@@ -64,7 +63,7 @@ router.get('/', async (req, res) => {
 
 })
 
-router.post('/', tokenExtractor, async (req, res, next) => {
+router.post('/', tokenExtractor, sessionValidator, async (req, res, next) => {
     try {
         const user = await User.findByPk(req.decodedToken.id)
         const blog = await Blog.create({ ...req.body, userId: user.id }, { returning: true })
@@ -74,7 +73,7 @@ router.post('/', tokenExtractor, async (req, res, next) => {
     }
 })
 
-router.delete('/:id', tokenExtractor, userExtractor, blogFinder, async (req, res) => {
+router.delete('/:id', tokenExtractor, sessionValidator, userExtractor, blogFinder, async (req, res) => {
     try {
         if (!req.user) {
             return res.status(401).json({ error: 'No token' })

@@ -3,6 +3,11 @@ function errorHandler(error, request, response, next) {
         return response.status(400).send({ error: error.errors[0].message })
     }
 
+    if (error.name === 'SequelizeUniqueConstraintError') {
+        return response.status(400).json({ error: 'Unique constraint violation' })
+    }
+
+
     console.error('Error:', error);
     next(error)
 }

@@ -3,6 +3,7 @@ const router = require('express').Router()
 
 const { SECRET } = require('../util/config')
 const User = require('../models/user')
+const Session = require('../models/session')
 
 router.post('/', async (request, response) => {
     const body = request.body
@@ -14,6 +15,12 @@ router.post('/', async (request, response) => {
     })
 
     const passwordCorrect = body.password === user.password
+
+    if (user.disabled) {
+        return response.status(401).json({
+            error: 'User is disabled'
+        })
+    }
 
     if (!(user && passwordCorrect)) {
         return response.status(401).json({
@@ -27,6 +34,7 @@ router.post('/', async (request, response) => {
     }
 
     const token = jwt.sign(userForToken, SECRET)
+    await Session.create({ userId: user.id, sessionId: token })
 
     response
         .status(200)

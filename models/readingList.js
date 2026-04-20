@@ -2,7 +2,18 @@ const { Model, DataTypes } = require('sequelize')
 
 const { sequelize } = require('../util/db')
 
-class ReadingList extends Model { }
+class ReadingList extends Model {
+    toJSON() {
+        const values = this.get({ plain: true })
+
+        return {
+            id: values.id,
+            user_id: values.userId,
+            blog_id: values.blogId,
+            read: values.readStatus,
+        }
+    }
+}
 
 ReadingList.init({
     id: {
@@ -28,7 +39,13 @@ ReadingList.init({
     sequelize,
     underscored: true,
     timestamps: false,
-    modelName: 'reading_list'
+    modelName: 'reading_list',
+    indexes: [
+        {
+            unique: true,
+            fields: ['userId', 'blogId'],
+        },
+    ]
 })
 
 module.exports = ReadingList
